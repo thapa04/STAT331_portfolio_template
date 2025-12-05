@@ -1,6 +1,6 @@
 ---
 title: "STAT 331 Portfolio"
-author: "Shashank Thapa"
+author: "Shashank Thapa "
 format: html 
 embed-resources: true
 layout: margin-left
