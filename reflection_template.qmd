@@ -51,7 +51,6 @@ military <- read_xlsx("gov_spending_per_capita.xlsx",
                       n_max = 190,
                       na = c("xxx",". .","..")
                       )
-
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
@@ -60,8 +59,7 @@ military <- read_xlsx("gov_spending_per_capita.xlsx",
 
 ```{r}
 #| label: wd-2-ex-1
-# Lab 3 
-# Problem #8
+# Lab 3 Problem #8
 teacher_evals_clean |>
   filter(if_any(everything(), is.na)) |>
   select(teacher_id, course_id, which(is.na(teacher_evals_clean[1, ])))
@@ -71,31 +69,33 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: wd-2-ex-2
-# PA 3 
-colleges_clean <- colleges_raw |>
-  select(-INSTURL, -CITY, -ZIP)
+# Lab 3 Problem 5  
+#Remove unnecessary columns with select
+teacher_evals_clean <- teacher_evals |>
+  select(course_id, teacher_id, question_no, no_participants,
+         resp_share, SET_score_avg, percent_failed_cur,
+         academic_degree, seniority, sex)
+
 ```
+In Lab 3, I removed unused variables while cleaning the teacher evaluation dataset. This allowed me to retain only the variables relevant to later analysis. Using select() in this way ensures a cleaner and more efficient data frame for downstream work.
 
 -   Example selecting columns based on logical values (e.g., `starts_with()`, `ends_with()`, `contains()`, `where()`)
 
 ```{r}
 #| label: wd-2-ex-3
-# Lab 4 Challenge Problem 2 
-ca_childcare <- counties |>
-  filter(state_name == "California") |>        
-  select(county_fips_code, county_name, state_name) |>  
-  inner_join(childcare_costs, by = "county_fips_code")
-
+# Lab 4 – Problem 7: Selecting childcare cost columns using a logical helper
+#Instead of just selecting all of the cols like (mc_infant, mc_toddler, mc_preschool etc.) We grab all the ones that start with mc_ 
+childcare_prices <- ca_childcare |>
+  select(region, study_year, starts_with("mc_"))
 ```
 
-**WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
+ **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   Numeric Example 1
 
 ```{r}
 #| label: wd-3-numeric-ex-1
-# Lab 3 — Data cleaning step 
-# Problem #5 
+# Lab 3 Problem #5 
 teacher_evals_clean <- teacher_evals |>
   rename(sex = gender) |>
   filter(no_participants >= 10) |>
@@ -106,62 +106,58 @@ teacher_evals_clean <- teacher_evals |>
     academic_degree = as.factor(academic_degree),
     seniority = as.factor(seniority)
   )
-
 ```
 
 -   Numeric Example 2
 
 ```{r}
 #| label: wd-3-numeric-ex-2
-#Lab 3 
-# Problem #9 
+#Lab 3 Problem #9 
 teacher_evals_clean |>
   group_by(teacher_id, course_id) |>
   summarize(n_questions = n_distinct(question_no), .groups = "drop") |>
   filter(n_questions == 9)
-
 ```
 
 -   Character Example 1 (any context)
 
 ```{r}
 #| label: wd-3-character
-# PA 5.1 Problem 
-
-clean_messages <- message_data |>
-  filter(str_detect(Word, "[A-Z]"))  # keeps only words containing capital letters
-
+#Lab 4 - Problem 2 
+#Filtering Rows using a Character Variable 
+# I filtered the counties dataset to keep only rows where state_name was "California". This demonstrates filtering a dataframe based on a character variable.
+ca_childcare <- counties |>
+  filter(state_name == "California") |>  #Filter by California State
+   select(county_fips_code, county_name, state_name) #Doesn't pertain to example |>
+  inner_join(childcare_costs, 
+            by = "county_fips_code") 
 ```
+
 
 -   Character Example 2 (example must use functions from **stringr**)
 
 ```{r}
 #| label: wd-3-string
-# Revised version for WD-3 (character + stringr)
-# Lab #4 Problem XX
-
-ca_childcare <- counties |>
-  filter(str_detect(state_name, "California")) |>          
-  select(county_fips_code, county_name, state_name) |>  
-  inner_join(childcare_costs, 
-             by = "county_fips_code")
-
+#Lab5 - Witness 2 Character example from stingr
+#Used str_detect() as my stringr function to  pattern match of witness 2 
+witness2 <- person |>
+  filter(str_detect(name, regex("^Annabel\\b", ignore_case = TRUE)),
+         address_street_name == "Franklin Ave") |>
+  slice(1)
 ```
 
 -   Date (example must use functions from **lubridate**)
 
 ```{r}
 #| label: wd-3-date
-# PA 5.2 — Date filtering (lubridate)
-# Problem 4 
-
-date1 <- dmy_hms("24-november-2022 0:00:00",
-                 tz = "America/Los_Angeles")
-
-interval1 <- interval(date1 - days(35),
-                      date1 + days(35))
-suspects <- suspects |>
-  filter(time.spotted %within% interval1)
+# Lab 5 - Crime Scene Report
+crime_scene_report |> 
+  mutate(date = ymd(as.character(date))) |> 
+  filter(
+    type == "murder",
+    city == "SQL City",
+    date == ymd("2018-01-15")
+  )
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -170,22 +166,21 @@ suspects <- suspects |>
 
 ```{r}
 #| label: wd-4-numeric-ex-1
-# PA 3 Problem 3
-colleges_clean3 <- colleges_clean2 |>
-  mutate(
-    TUITIONFEE_IN  = as.numeric(TUITIONFEE_IN),
-    TUITIONFEE_OUT = as.numeric(TUITIONFEE_OUT),
-    SAT_AVG        = as.numeric(SAT_AVG),
-    UGDS           = as.numeric(UGDS),
-    ADM_RATE       = as.numeric(ADM_RATE)
-  )
+# Lab 7 Problem 3 — Creating a numeric missing-value indicator
+miss_rows_by_group <- fish |>
+  mutate(row_id = row_number(),
+         any_na = if_any(everything(), is.na)) |>
+  filter(any_na) |>
 ```
-
+Any_na is a new numerical variable that is created inside of the mutate function. 
 -   Numeric Example 2
 
 ```{r}
 #| label: wd-4-numeric-ex-2
-
+#Lab 7 Problem 7 - Numeric example rescaled 
+#Creating length_scaled 
+fish_scaled <- fish |>
+  mutate(length_scaled = rescale_01(length))
 ```
 
 -   Factor Example 1 (renaming levels)
@@ -193,6 +188,7 @@ colleges_clean3 <- colleges_clean2 |>
 ```{r}
 #| label: wd-4-factor-ex-1
 # Lab 4 Problem 7
+#Creates new factor variable age_group
 price_long <- ca_childcare |>
   filter(!is.na(region)) |>
   select(region, study_year, mc_infant, mc_toddler, mc_preschool) |>
@@ -209,7 +205,6 @@ price_long <- ca_childcare |>
       Preschool = "mc_preschool"
     )
   )
-
 ```
 
 -   Factor Example 2 (reordering levels)
@@ -217,6 +212,7 @@ price_long <- ca_childcare |>
 ```{r}
 #| label: wd-4-factor-ex-2
 # Lab 4 Problem 7
+#Modifys existing factor variable age_group, by releveling. region is re-ordered based on data.
 price_long <- price_long |>
   mutate(
     age_group = fct_relevel(age_group, "Infant", "Toddler", "Preschool"),
@@ -229,25 +225,29 @@ price_long <- price_long |>
 
 ```{r}
 #| label: wd-4-string
-# PA 5.1 Problem 4
-message_data <- message_data |>
-  mutate(Word = str_replace(Word, pattern = "aa", replace = "ee"))
+# Lab 8 Problem 3 — Using stringr functions to clean character labels
+#Uses str_replace_all(), str_to_title(), shows modication of character data. 
+clean_label <- function(x) {
+  x |>
+    str_replace_all("_", " ") |>   
+    str_to_title()                 # convert to Title Case
+}
 
 ```
-
 -   Date (example must use functions from **lubridate**)
 
 ```{r}
 #| label: wd-4-date
-# PA 5.2 Problem 4
-date1 <- dmy_hms("24-November-2022 0:00:00", tz = "America/Los_Angeles")
-interval1 <- interval(date1 - days(35), date1 + days(35))
-
-suspects <- suspects |>
-  filter(Time.Spotted %within% interval1)
-
+# Lab 5 — Converting a character date into a proper Date object using lubridate
+crime_scene_report |> 
+  mutate(date = ymd(as.character(date))) |> # modify: convert to Date class
+  filter(
+    type == "murder",
+    city == "SQL City",
+    date == ymd("2018-01-15")         # filter using a Date
+  )
 ```
-
+Modifies data variable, date was originally stored as character/numeric 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
 
 -   `left_join()` Example 1
@@ -268,37 +268,68 @@ ca_childcare <- ca_childcare |>
 ```{r}
 #| label: wd-5-right
 # Lab 4 Problem 2
+ca_counties <- counties |>
+  filter(state_name == "California")
 childcare_focus <- childcare_costs |>
-  right_join(counties |> 
-  filter(state_name == "California"),
-             by = "county_fips_code")
-
-
+  right_join(ca_counties, by = "county_fips_code")
 ```
 
 -   `left_join()` **or** `right_join()` Example 2
 
 ```{r}
 #| label: wd-5-left-right-ex-2
+# Lab 5 Using left_join() to attach interview transcripts to key witnesses
 
+witness_interviews <- person |>
+  filter(
+    (address_street_name == "Northwestern Dr" & 
+       address_number == max(address_number)) |
+    (str_detect(name, "Annabel") &
+       address_street_name == "Franklin Ave")
+  ) |>
+  left_join(interview, by = c("id" = "person_id")) |>
+  select(transcript)
 ```
-
+A simple left join to add tax revenue data 
 -   `inner_join()` Example 1
 
 ```{r}
 #| label: wd-5-inner-ex-1
-# Challenge 3 
-teacher_evals_compare <- teacher_evals_clean |>
-  inner_join(course_details, by = "course_id")
-
+# Lab 5 Problem Step – After Witness #2 
+#Filtering gold '48Z' members and inner joining to check-in data
+gold_48Z_checked <- get_fit_now_member |>
+  filter(membership_status == "gold",
+         str_starts(id, "48Z")) |>
+  inner_join(
+    get_fit_now_check_in,
+    join_by(id == membership_id)
+  )
 ```
-
 -   `inner_join()` Example 2
 
 ```{r}
 #| label: wd-5-inner-ex-2
+# Lab 5 – Identifying mastermind using multiple inner joins
+#Inner join  across three tables, person, drivers license, facebook
 
+mastermind_candidates <- person |>
+  inner_join(drivers_license, join_by(license_id == id)) |>
+  inner_join(facebook_event_checkin, join_by(id == person_id)) |>
+  mutate(date = ymd(as.character(date))) |>
+  filter(
+    gender     == "female",
+    height     %in% c(65, 66, 67),
+    hair_color == "red",
+    car_make   == "Tesla",
+    car_model  == "Model S",
+    event_name == "SQL Symphony Concert",
+    date >= ymd("2017-12-01"),
+    date <= ymd("2017-12-31")
+  ) |>
+  count(id, name, sort = TRUE) |>
+  filter(n == 3)
 ```
+
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
 
@@ -306,28 +337,30 @@ teacher_evals_compare <- teacher_evals_clean |>
 
 ```{r}
 #| label: wd-6-semi
-#Lab 5 
-interview |>
+#Lab 5 Extracting the murderer's interview using semi_join()
+murderer_interview <- interview |>
   semi_join(
-    bind_rows(witness1, witness2),
-    by = c("person_id" = "id")
+    select(murderer, person_id),
+    by = "person_id"
   ) |>
-  arrange(person_id) |>
-  select(person_id, transcript)
-
-
 ```
-
+Sem Join to keep only the interview rows whose person_id appears in the murderer table
 -   `anti_join()`
 
 ```{r}
 #| label: wd-6-anti
-# Lab 5 
-silent_suspects <- person |>
-  anti_join(interview, by = c("id" = "person_id"))
+#Lab 5 - Find gold 48Z who didn't check in
+#Revised for anti_join(), anti_join() keeps rows from gold_48Z where there is no matching id in gold_48Z_checked.
+gold_48Z_checked <- gold_48Z |>
+  inner_join(get_fit_now_check_in, join_by(id == membership_id)) |>
+  mutate(check_in_date = ymd(as.character(check_in_date))) |>
+  filter(between(check_in_date, ymd("2018-01-09"), ymd("2018-01-14")))
 
-
+#Anti join: members with NO matching check-in
+non_suspects <- gold_48Z |>
+  anti_join(gold_48Z_checked, by = "id")
 ```
+
 
 **WD-7: I can pivot dataframes from long to wide and visa versa**
 
@@ -336,23 +369,25 @@ silent_suspects <- person |>
 ```{r}
 #| label: wd-7-long
 # Lab 4 Problem 6
+#Converting childcare price cols to long 
 price_long <- ca_childcare |> 
-  filter(!is.na(region))  |> 
+  filter(!is.na(region)) |> 
   select(region, study_year, mc_infant, mc_toddler, mc_preschool) |>
   pivot_longer(
-  cols = c(mc_infant, mc_toddler, mc_preschool),
-  names_to = "age_group_var",
-  values_to = "median_weekly"
-) |>
-#New Revision 
-mutate(
-  age_group = fct_recode(
+    cols      = c(mc_infant, mc_toddler, mc_preschool),
+    names_to  = "age_group_var",
+    values_to = "median_weekly"
+  ) |>
+  mutate(
+    age_group = fct_recode(
       age_group_var,
       Infant    = "mc_infant",
       Toddler   = "mc_toddler",
       Preschool = "mc_preschool"
-    ) |> fct_relevel("Infant","Toddler","Preschool"),
-  region = fct_reorder2(region, study_year, median_weekly)
+    ) |> 
+      fct_relevel("Infant", "Toddler", "Preschool"),
+
+    region = fct_reorder2(region, study_year, median_weekly)
   )
 ```
 
@@ -361,16 +396,19 @@ mutate(
 ```{r}
 #| label: wd-7-wide
 # Lab 4 Problem 5
-income_by_region <- ca_childcare_clean |>
-  filter(study_year %in% c(2008, 2018)) |>
-  group_by(region, study_year) |>
-  summarise(median_income = median(mhi_2018, na.rm = TRUE), .groups = "drop") |>
+#Income table in wide format (2008 vs 2018)
+income_by_region <- ca_childcare_clean |> 
+  filter(study_year %in% c(2008, 2018)) |> 
+  group_by(region, study_year) |> 
+  summarise(
+    median_income = median(mhi_2018, na.rm = TRUE),
+    .groups = "drop"
+  ) |> 
   pivot_wider(
-    names_from = study_year,
-    values_from = median_income,
+    names_from   = study_year,
+    values_from  = median_income,
     names_prefix = "Income_"
   )
-
 ```
 
 ## Reproducibility
@@ -387,6 +425,11 @@ The following assignments satisfy the above criteria:
     -   Challenge 4
 -   Lab 5
     -   Challenge 5
+-   Lab 6 
+-   Lab 7
+    - Challenge 7
+-   Lab 8
+-   Lab 9 
 
 **R-2: I can write well documented and tidy code.**
 
@@ -395,6 +438,7 @@ The following assignments satisfy the above criteria:
 ```{r}
 #| label: r-2-1
 # Lab 4 Problem 4 
+#Uses ggplot to create a plot for ca_childcare_long 
 ggplot(data = ca_childcare_long, 
        aes(x = study_year, y = median_price, color = region)) +
   geom_point(alpha = 0.6) +
@@ -411,59 +455,102 @@ ggplot(data = ca_childcare_long,
     axis.title.y = element_text(size = 10),
     legend.position = "bottom"
   )
-
 ```
-
 -   Example of **dplyr** pipeline
 
 ```{r}
 #| label: r-2-2
-#PA 3 Question 7 
-colleges_clean <- colleges |>
-  select(INSTNM,
-         CITY,
-         STABBR,
-         ZIP,
-         ADM_RATE,
-         SAT_AVG,
-         UGDS,
-         TUITIONFEE_IN,
-         TUITIONFEE_OUT,
-         CONTROL,
-         REGION) |>
-  filter(CONTROL != 3) |>
-  mutate(TUITIONFEE_IN  = as.numeric(TUITIONFEE_IN),
-         TUITIONFEE_OUT = as.numeric(TUITIONFEE_OUT),
-         SAT_AVG        = as.numeric(SAT_AVG),
-         UGDS           = as.numeric(UGDS),
-         ADM_RATE       = as.numeric(ADM_RATE),
-         CONTROL        = as.factor(CONTROL),
-         REGION         = as.factor(REGION),
-         TUITION_DIFF = TUITIONFEE_OUT - TUITIONFEE_IN) |>
-  drop_na()
-
+# Lab 3 Problem 7 — Summarize instructor demographics
+#Creates plot in dplyr from teacher_evals
+teacher_evals_clean |>
+  distinct(teacher_id, .keep_all = TRUE) |>
+  summarise(
+    count_professors   = sum(academic_degree == "prof", na.rm = TRUE),
+    count_doctorates   = sum(academic_degree == "dr",   na.rm = TRUE),
+    avg_seniority      = mean(seniority, na.rm = TRUE),
+    male_instructors   = sum(sex == "male",   na.rm = TRUE),
+    female_instructors = sum(sex == "female", na.rm = TRUE)
+  )
 ```
 
 -   Example of function formatting
 
 ```{r}
 #| label: r-2-3
+# Lab 8 Question 3 Well-formatted plotting function using tidy evaluation
 
+clean_label <- function(x) {
+  x |> 
+    str_replace_all("_", " ") |> 
+    str_to_title()
+}
+
+plot_scatter <- function(df, x, y) {
+  x_lab <- clean_label(as_label(enquo(x)))
+  y_lab <- clean_label(as_label(enquo(y)))
+  title  <- englue("{x_lab} vs {y_lab}")
+
+  df |>
+    ggplot(aes(x = {{ x }}, y = {{ y }}, color = {{ x }})) +
+    geom_point() +
+    labs(
+      title = title,
+      x = x_lab,
+      y = y_lab,
+      color = x_lab
+    ) +
+    theme_minimal() +
+    guides(color = "none")
+}
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
 
 -   Example (any context)
 
-```{}
-```
+```{r}
+#| label: r-3-1 
+#Lab 9 Question 4 
 
+evals_factor <- evals |>
+  map_if(.p = is.character, .f = as.factor) |>
+  bind_cols()
+```
+Robustly converting all character columns to factors, the pipeline doesn't hard code names, but automatically finds any character variables and converts them to as.factor
 -   Example (function stops)
 
 ```{r}
 #| label: r-3-function-stops
+# Lab 7 Problem 4 
+
+rescale_01 <- function(x) {
+
+  # Stop if input is not numeric
+  if (!is.numeric(x)) {
+    stop("Input must be numeric.", call. = FALSE)
+  }
+
+  # Stop if vector length is too short
+  if (length(x) <= 1) {
+    stop("Input vector must have length > 1.", call. = FALSE)
+  }
+
+  # Compute min/max efficiently and safely
+  rng   <- range(x, na.rm = TRUE)
+  min_x <- rng[1]
+  max_x <- rng[2]
+
+  # Handle edge case: all values identical
+  if (min_x == max_x) {
+    return(ifelse(is.na(x), NA_real_, 0))
+  }
+
+  # Return rescaled values
+  (x - min_x) / (max_x - min_x)
+}
 
 ```
+rescale_01() function with input validation
 
 ## Data Visualization & Summarization
 
@@ -484,52 +571,27 @@ ggplot(data = surveys,
     title = "Relationship b/w weight and hindfoot len by species",
     subtitle = "Y: Hindfoot length (mm)"
   )
-
 ```
 
 -   At least one numeric variable and one categorical variable
 
 ```{r}
 #| label: dvs-2-num-cat
-#Lab 2 Problem 8 
-ggplot(data = surveys, aes(x = species, y = weight, fill = sex)) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_jitter(alpha = 0.4, size = 1, width = 0.2) +
-  scale_fill_brewer(palette = "Set2") +
+# Challenge 3 — categorical × categorical visualization with percentages
+teacher_evals_compare |>
+  count(SET_level, sen_level) |>
+  group_by(SET_level) |>
+  mutate(percent = n / sum(n)) |>
+  ggplot(aes(x = SET_level, y = percent, fill = sen_level)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
   labs(
-    x = "Species",
-    y = "Weight (grams)",
-    fill = "Sex"
+    title = "Seniority Distribution Within Each SET Level",
+    x = "SET Level",
+    y = "Percent",
+    fill = "Seniority Level"
   ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
--   At least two categorical variables
-
-```{#Lab 4 Problem 7}
-ggplot(price_long, aes(study_year, median_weekly, color = region)) + 
-  geom_point(alpha = 0.4, size = 1.3) +
-  geom_smooth(method = "loess", se = TRUE, linewidth = 0.7, alpha = 0.1) +
-  facet_wrap(~ age_group, nrow = 1) +
-  labs(
-    title = "Weekly Median Price for Center-Based Childcare ($)",
-    x = "Study Year", color = "California Region"
-  ) +
-  scale_x_continuous(breaks = seq(2008, 2018, 2), limits = c(2008, 2018),
-                     expand = expansion(mult = c(0.02, 0.02))) +
-  scale_y_continuous(breaks = seq(100, 500, 100), limits = c(100, 500),
-                     expand = expansion(mult = c(0.02, 0.02))) +
-  scale_color_manual(values = region_cols) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.spacing = unit(1, "lines"),
-    aspect.ratio = 1,                        # Found in discord 
-    legend.position = "right",
-    axis.text.x = element_text(size = 6 ),
-    axis.text.y = element_text(size = 6 ),
-    axis.title.y = element_blank(),
-    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.7)
-  )
+  theme_minimal()
 
 ```
 
@@ -608,7 +670,6 @@ ggplot(data = surveys, aes(x = species, y = weight, fill = sex)) +
     y = "Weight (grams)",
     fill = "Sex"
   ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 -   I can modify my plot titles to clearly communicate the data context
@@ -663,7 +724,6 @@ ca_childcare_long |>
 ```{r}
 #| label: dvs-2-ex-5
 #Lab 4 Problem 7
-
 ca_childcare_long |>
   mutate(region = fct_reorder2(.f = region,
                                .x = study_year,
@@ -682,9 +742,8 @@ ca_childcare_long |>
     legend.title = element_text(size = 10),
     legend.text  = element_text(size = 9)
   )
-
 ```
-
+Reordered legend 
 **DVS-3: I show creativity in my visualizations**
 
 -   I can use non-standard colors (Example 1)
@@ -692,14 +751,12 @@ ca_childcare_long |>
 ```{r}
 #| label: dvs-3-1-ex-1
 # Lab 2 Problem 4
-
 custom_cols <- c(
   "Dipodomys"       = "#3B528B",
   "Peromyscus"      = "#5DC863",
   "Chaetodipus"     = "#FDE725",
   "Reithrodontomys" = "#440154"
 )
-
 surveys |>
   filter(!is.na(weight),
          !is.na(hindfoot_length),
@@ -716,20 +773,34 @@ surveys |>
   theme_minimal()
 
 ```
+I chose this custom color palette that assigns high contast hues. I found this online as it was inclusive and I found it to improve the overall clairty of the scatterplot by making species differences visually popping. 
 
 -   I can use non-standard colors (Example 2)
 
 ```{r}
 #| label: dvs-3-1-ex-2
+#Lab 8 - I did some research, and found a palette under the "viridis" library, I thought it was a great palette because it colorblind-friendly, the colors are perceptually uniform and really help show the diffences in color for penguins. 
+library(viridis)
 
+penguins |>
+  filter(!is.na(bill_length_mm),
+         !is.na(species)) |>
+  ggplot(aes(x = species, y = bill_length_mm, fill = species)) +
+  geom_boxplot(alpha = 0.85) +
+  scale_fill_viridis_d(option = "C") +
+  labs(
+    title = "Penguin Bill Length by Species (Viridis Palette)",
+    x = "Species",
+    y = "Bill Length (mm)",
+    fill = "Species"
+  ) +
+  theme_minimal()
 ```
-
 -   I can use annotations (e.g., `geom_text()`)
 
 ```{r}
 #| label: dvs-3-2
 # Lab 2 Problem 4
-
 surveys |>
   filter(!is.na(weight),
          !is.na(hindfoot_length),
@@ -757,7 +828,31 @@ surveys |>
 
 ```{r}
 #| label: dvs-3-3
+# Lab 4 
+#I created new code that uses geom_ribbon to show price spread over time
+#Ribbon highlights the range of childcare costs across regions for each study year.
 
+price_summary <- price_long |>
+  group_by(study_year) |>
+  summarise(
+    min_price = min(median_weekly, na.rm = TRUE),
+    max_price = max(median_weekly, na.rm = TRUE)
+  )
+
+ggplot(price_summary, aes(x = study_year)) +
+  geom_ribbon(
+    aes(ymin = min_price, ymax = max_price),
+    fill = "#A6CEE3",
+    alpha = 0.5
+  ) +
+  geom_line(aes(y = min_price), color = "#1F78B4", linewidth = 0.8) +
+  geom_line(aes(y = max_price), color = "#1F78B4", linewidth = 0.8) +
+  labs(
+    title = "Range of Childcare Costs Across CA Regions Over Time",
+    x = "Study Year",
+    y = "Median Weekly Price (Min to Max)"
+  ) +
+  theme_minimal()
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -766,16 +861,12 @@ surveys |>
 
 ```{r}
 #| label: dvs-4-summarize
-# Lab 3 Problem 10 
-
-teacher_evals_clean |>
-  filter(question_no == 901) |>
-  group_by(teacher_id) |>
-  summarise(
-    avg_set_score = mean(SET_score_avg, na.rm = TRUE),
-    .groups = "drop"
+#Lab 7 Question 1 
+# I modified lab 7 Q1 code to use a summarize and output one table. It is efficient and still answers the question, How many observations and variables.
+fish |> 
+  summarize(
+    n_obs_with_missing = sum(if_any(everything(), is.na))
   )
-
 ```
 
 -   Example using `across()`
@@ -783,7 +874,6 @@ teacher_evals_clean |>
 ```{r}
 #| label: dvs-4-across
 # Lab 3 Problem 10
-#Modified 
 teacher_evals_clean |>
   filter(question_no == 901) |>
   group_by(teacher_id) |>
@@ -818,7 +908,15 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: dvs-5-2
-
+# Lab 3 Problem 10 
+#Recieved a growing comment/ suggestion to move this code under DVS-5 rather than a calculated numerical summary. This code block is suitable here because it already includes grouping, and simple summarizes across groups. 
+teacher_evals_clean |>
+  filter(question_no == 901) |>
+  group_by(teacher_id) |>
+  summarise(
+    avg_set_score = mean(SET_score_avg, na.rm = TRUE),
+    .groups = "drop"
+  )
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
@@ -828,6 +926,7 @@ teacher_evals_clean |>
 ```{r}
 #| label: dvs-6-ex-1
 #Lab 4 Problem 5
+# This example filters the teacher_evals_clean dataset down to instructors 
 ca_childcare_clean |>
   filter(study_year %in% c(2008, 2018)) |>
   group_by(region, study_year) |>
@@ -848,28 +947,52 @@ ca_childcare_clean |>
 
 ```{r}
 #| label: dvs-6-ex-2
-
+#Lab 9 Problem 6 
+# My table is readable as cols are relabled, headers are applied and percentages properly formatted
+demo_summary |>
+  mutate(
+    variable = factor(variable,
+                      levels = c("Academic Degree", "Seniority", "Sex"))
+  ) |>
+  arrange(variable, desc(n)) |>
+  gt(groupname_col = "variable") |>
+  tab_header(
+    title = "Demographics of Instructors",
+    subtitle = "Academic Degree, Seniority, and Sex"
+  ) |>
+  cols_label(
+    level = "Group",
+    n     = "Count",
+    prop  = "%"
+  ) |>
+  tab_spanner(
+    label = "Professors",
+    columns = c(n, prop)
+  ) |>
+  fmt_percent(
+    columns = prop,
+    decimals = 1
+  )
 ```
 
 -   I can arrange my table to have an intuitive ordering
 
 ```{r}
 #| label: dvs-6-ex-3
-#Lab 4 Problem 5
-ca_childcare_clean |>
-  filter(study_year %in% c(2008, 2018)) |>
-  group_by(region, study_year) |>
-  summarise(
-    median_income = median(mhi_2018, na.rm = TRUE),
-    .groups = "drop"
-  ) |>
-  pivot_wider(
-    names_from  = study_year,
-    values_from = median_income,
-    names_prefix = "Median Income "
-  ) |>
-  arrange(desc(`Median Income 2018`))
+#Lab 9 Problem 3
+# This example arranges the table of variable types alphabetically by variable
+# name to create a clearer, more intuitive order for the reader.
 
+surveys_types |>
+  arrange(Variable) |>
+  gt() |>
+  tab_header(
+    title = "Data Types for Variables in the Surveys Dataset"
+  ) |>
+  cols_label(
+    Variable = md("**Variable**"),
+    Data_Type = md("**Data Type**")
+  )
 ```
 
 **DVS-7: I show creativity in my tables.**
@@ -878,6 +1001,25 @@ ca_childcare_clean |>
 
 ```{r}
 #| label: dvs-7-ex-1
+# Lab 9, Problem 8
+# Conditional cell coloring to highlight missing values,
+
+fish_missing |> 
+  gt() |>
+  tab_header(
+    title = "Number of Missing Values for Fish Measurements",
+    subtitle = "Blackfoot River Fish Dataset"
+  ) |>
+  cols_label(
+    Variable = "Measurement Variable",
+    Missing_Values = "Missing Values"
+  ) |> 
+  data_color(
+    columns = Missing_Values,
+    fn = function(x) {
+      if_else(x == 0, "lightgreen", "red")
+    }
+  )
 
 ```
 
@@ -885,6 +1027,18 @@ ca_childcare_clean |>
 
 ```{r}
 #| label: dvs-7-ex-2
+#Lab 4 Problem 5
+#This transformation reshapes the data from long to wide format so each region appears once with separate columns for 2008 and 2018. 
+income_by_region <- ca_childcare |> 
+  filter(!is.na(region), study_year %in% c(2008, 2018)) |> 
+  group_by(region, study_year) |> 
+  summarise(median_income = median(mhi_2018, na.rm = TRUE), .groups = "drop") |> 
+  pivot_wider(
+    names_from = study_year,
+    values_from = median_income,
+    names_glue = "median_income_{study_year}"
+  ) |> 
+  arrange(desc(median_income_2018))
 
 ```
 
@@ -897,43 +1051,50 @@ ca_childcare_clean |>
 ```{r}
 #| label: pe-1-one-call
 # Lab 3 Using one Call, Problem 5
+# PE-1 Example — Revised syntax per instructor feedback
+# Learning Note:using `.fns = ~ as.factor(.x)` (and similarly for character conversion)to make the transformation explicit and consistent with tidyverse function-mapping conventions.
 
 teacher_evals_clean <- teacher_evals |>
   rename(sex = gender) |>
   filter(no_participants >= 10) |>
   mutate(
-    across(.cols = c(course_id, teacher_id),
-           .fns  = as.character),
-    across(.cols = c(academic_degree, seniority),
-           .fns  = as.factor)
+    across(
+      .cols = c(course_id, teacher_id),
+      .fns  = ~ as.character(.x)   # explicit mapping syntax
+    ),
+    across(
+      .cols = c(academic_degree, seniority),
+      .fns  = ~ as.factor(.x)      # improved syntax using .fns + ~
+    )
   )
-
 ```
 
 -   using `across()`
 
 ```{r}
 #| label: pe-1-across
-# Lab 3 Problem 10 
-teacher_evals_clean |>
-  filter(question_no == 901) |>
-  group_by(teacher_id) |>
+# PE-1 Example (Modified One Function Call Using across()) — Lab 7, Problem 1
+# Reducing repetition by applying one function 
+# (`sum(is.na(.x))`) across every variable with a single across() call.
+
+fish |>
   summarise(
     across(
-      .cols  = c(no_participants, resp_share, SET_score_avg),
-      .fns   = mean,
-      .names = "{.col}_avg"
-    ),
-    .groups = "drop"
+      .cols = everything(),
+      .fns  = ~ sum(is.na(.x))
+    )
   )
-
 ```
 
 -   using functions from the `map()` family
 
 ```{r}
 #| label: pe-1-map-1
-
+#Lab 9 Problem 2
+#Replaces class() calls with one map_chr call, shows iteration across cols without repeating
+surveys_types <- surveys |>
+  map_chr(~ class(.x)) |>
+  enframe(name = "Variable", value = "Data_Type")
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
@@ -942,13 +1103,34 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: pe-2-1
+#Lab 8 Queston 3 
+# Standarizes variable names by replacing underscores, operators on vectors of strings reduces repeated string manipulation 
 
+clean_label <- function(x) {
+  x |> 
+    str_replace_all("_", " ") |> 
+    str_to_title()
+}
 ```
 
 -   Example 2: Function that operates on data frames
 
 ```{r}
 #| label: pe-2-2
+#Lab 8 Question 1 
+# This function reduces repetition by allowing multiple columns of a data 
+# frame to be rescaled in a single step, using my rescale_01() helper.
+
+rescale_column <- function(df, cols) {
+  df |> 
+    mutate(across(all_of(cols), rescale_01)) #all_of() to use character vector to select cols 
+}
+
+# Example (from Lab 8)
+rescale_column(
+  penguins,
+  cols = c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")
+)
 
 ```
 
@@ -956,6 +1138,19 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: pe-2-3
+# Lab 7 — Vector function for rescaling numeric vectors
+
+rescale_01 <- function(x) {
+  if (!is.numeric(x)) stop("Input must be numeric.", call. = FALSE)
+  if (length(x) <= 1) stop("Input vector must have length > 1.", call. = FALSE)
+  
+  range_x <- range(x, na.rm = TRUE)
+  min_x   <- range_x[1]
+  max_x   <- range_x[2]
+
+  if (min_x == max_x) return(ifelse(is.na(x), NA_real_, 0))
+  (x - min_x) / (max_x - min_x)
+}
 
 ```
 
@@ -965,21 +1160,37 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: pe-3-across
-
+# Lab 7 Question 3 — Using if_any() to flag rows containing missing values
+# Uses the across-family helper if_any() to iterate over all variables and detect whether any column in a row contains an NA.
+fish |>
+  mutate(
+    any_missing = if_any(everything(), is.na)   # TRUE if any variable is NA
+  ) |>
+  select(any_missing) |> 
 ```
 
 -   using a `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
 
 ```{r}
 #| label: pe-3-map-1
+# Lab 9 Question 2 
+#Using map_chr() to iterate over each column and extract data types
+raw_names <- c("bill_length_mm", "bill_depth_mm", "body_mass_g")
 
+clean_names <- map_chr(raw_names, clean_label)
+clean_names
 ```
 
 -   using a `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
 
 ```{r}
 #| label: pe-3-map-2
+#Based on Lab 9 - recoding variable labels with map2() to cut down on repetition. 
 
+old_names <- c("academic_degree", "sen_level", "sex")
+new_names <- c("Academic Degree", "Seniority", "Sex")
+
+map2(old_names, new_names, ~ paste(.x, "to", .y))
 ```
 
 **PE-4: I can use modern tools when carrying out my analysis.**
@@ -988,6 +1199,10 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: pe-4-1
+# Lab 4 — Using fct_reorder2(), a modern forcats tool
+#Fct_reorder2 replaces older manual sorting methods. 
+price_long |>
+  mutate(region = fct_reorder2(region, study_year, median_weekly))
 
 ```
 
@@ -995,6 +1210,19 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: pe-4-2
+# Lab 2 — Piping a wrangled dataset directly into ggplot()
+
+surveys |>
+  filter(!is.na(weight), !is.na(hindfoot_length)) |>
+  mutate(species = factor(species)) |>
+  ggplot(aes(x = weight, y = hindfoot_length, color = species)) +
+  geom_point(alpha = 0.5) +
+  labs(
+    x = "Weight (g)",
+    y = "Hindfoot Length (mm)",
+    title = "Relationship Between Weight and Hindfoot Length by Species"
+  ) +
+  theme_minimal()
 
 ```
 
@@ -1006,6 +1234,18 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: dsm-1-1
+# Lab 4 – Problem 5: Median household income by region and year
+
+income_by_region <- ca_childcare |>
+  filter(!is.na(region), study_year %in% c(2008, 2018)) |>
+  group_by(region, study_year) |>
+  summarise(
+    median_income_2018_dollars = median(mhi_2018, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  arrange(desc(median_income_2018_dollars))
+
+income_by_region
 
 ```
 
@@ -1013,9 +1253,7 @@ teacher_evals_clean |>
 
 ```{r}
 #| label: dsm-1-2
-#Lab 4 Question 9 
-reg_mod1 <- lm(mc_infant ~ mhi_2018, data = ca_childcare)
-summary(reg_mod1)
+
 ```
 
 **DSSM-2: I can conduct common statistical analyses in R.**
@@ -1025,18 +1263,17 @@ summary(reg_mod1)
 ```{r}
 #| label: dsm-2-1
 # Challenge 3 — Chi-square test of independence between SET level and seniority
-
 chisq.test(teacher_evals_compare$SET_level,
            teacher_evals_compare$sen_level)
-
-
 ```
 
 -   Example 2
 
 ```{r}
 #| label: dsm-2-2
-
+#Lab 4 Question 9 
+reg_mod1 <- lm(mc_infant ~ mhi_2018, data = ca_childcare)
+summary(reg_mod1)
 ```
 
 -   Example 3
@@ -1050,15 +1287,19 @@ chisq.test(teacher_evals_compare$SET_level,
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
-Earlier in the course I mostly focused on just making the code run, but over time I realized that how I write the code matters too. For example, in Lab 3 I initially used several repeated `mutate()` and `filter()` calls, but after feedback I rewrote it as one clean pipeline. That change helped me see that there are often multiple dplyr solutions to the same task — and choosing the clearer, more efficient one makes the code much easier to understand later.
+Throughout the quarter, revising my work became one of the main ways I improved my coding habits. I revised almost every lab. I still made a consistent effort to understand why each revision was suggested and how to apply it in future assignments.Regretably, however I didn't leave conmments in my code very often (partially due to being unaware of this). 
 
-Another example, In Lab 4, I revised my original approach to recoding and ordering categorical variables in the childcare plot. Initially, I used `case_when`to manually relabel age groups and the legend ordering did not always match the lines in the plot. After feedback, I updated the code to use `fct_recode()` from forcats automatically align the legend with the plotted data. This change made the code both shorter and more reliable.
+Regardless, over time, I shifted from simply getting code to run to thinking more carefully about clarity, efficiency, and the bigger ideas behind tidy code.
+
+Even small fixes taught me to look for patterns in my approach and adjust my workflow so the same issues didn’t repeat. By the later labs, I was automatically applying feedback when writing new code. Revision ultimately helped reshape how I think about data analysis, and the updated chunks in my portfolio reflect how those changes carried through the rest of the course.
 
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
-In Lab 3, I also revised how I calculated summary statistics for instructors. My first solution calculated each numeric summary in separate function calls, which worked but required repeating variable names and made it harder to extend. I later rewrote this using `across()`, which allowed all summaries to be computed in a single call. This revision not only shortened the code significantly, but also made it easier to maintain
+Extending my thinking this quarter meant going beyond what was required and trying to understand which tools or functions would make my code clearer, more efficient, or more flexible. I tried to think critically about the options we learned in class and choose the approach that best fit each situation. When I was curious or wanted to improve something, I looked things up on my own—like exploring new color palettes or experimenting with functions such as across() or map() to write cleaner pipelines.
+
+A big part of extending my thinking was treating feedback as something to build on rather than just fix. For example, after learning how across() could replace several repeated summary steps, I started using it more intentionally in later labs to reduce repetition. Similarly, writing functions in Lab 8 helped me see how I could generalize tasks instead of rewriting the same code multiple times. Overall, I put real effort into producing thoughtful, high-quality work in each lab, and the code in my portfolio shows how I tried to push myself a little further each week.
 
 ## Peer Support & Collaboration
 
