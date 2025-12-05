@@ -10,7 +10,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an B+.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -279,7 +279,8 @@ childcare_focus <- childcare_costs |>
 ```{r}
 #| label: wd-5-left-right-ex-2
 # Lab 5 Using left_join() to attach interview transcripts to key witnesses
-
+#Learning note I originally found each witnesses interview in seperate stage and used slice (1)
+#After feedback I combined logic into one pipe that filters both witnesses, joins to their interviews and returns a signle dataset.
 witness_interviews <- person |>
   filter(
     (address_street_name == "Northwestern Dr" & 
@@ -337,14 +338,14 @@ mastermind_candidates <- person |>
 
 ```{r}
 #| label: wd-6-semi
-#Lab 5 Extracting the murderer's interview using semi_join()
+#Lab 5 Semi Join to keep only the interview rows whose person_id appears in the murderer table
 murderer_interview <- interview |>
   semi_join(
     select(murderer, person_id),
     by = "person_id"
   ) |>
 ```
-Sem Join to keep only the interview rows whose person_id appears in the murderer table
+
 -   `anti_join()`
 
 ```{r}
@@ -478,7 +479,7 @@ teacher_evals_clean |>
 ```{r}
 #| label: r-2-3
 # Lab 8 Question 3 Well-formatted plotting function using tidy evaluation
-
+#Learning note - My original version was hard coded but after feedback I wrote clean_label with stringr and englue() to turn variable names into something more readable. 
 clean_label <- function(x) {
   x |> 
     str_replace_all("_", " ") |> 
@@ -1280,6 +1281,10 @@ summary(reg_mod1)
 
 ```{r}
 #| label: dsm-2-3
+# Lab 2 Problem 17 
+#Anova comparing avg weight across species 
+species_mod <- aov(weight ~ species, data = surveys)
+summary(species_mod)
 
 ```
 
@@ -1287,9 +1292,7 @@ summary(reg_mod1)
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
-Throughout the quarter, revising my work became one of the main ways I improved my coding habits. I revised almost every lab. I still made a consistent effort to understand why each revision was suggested and how to apply it in future assignments.Regretably, however I didn't leave conmments in my code very often (partially due to being unaware of this). 
-
-Regardless, over time, I shifted from simply getting code to run to thinking more carefully about clarity, efficiency, and the bigger ideas behind tidy code.
+Throughout the quarter, revising my work became one of the main ways I improved my coding habits. I revised almost every lab. I still made a consistent effort to understand why each revision was suggested and how to apply it in future assignments.Regretably, however I didn't leave comments in my code as often as I should have (partially due to being unaware of this). Regardless, over time, I shifted from simply getting code to run to thinking more carefully about clarity, efficiency, and the bigger ideas behind tidy code.
 
 Even small fixes taught me to look for patterns in my approach and adjust my workflow so the same issues didn’t repeat. By the later labs, I was automatically applying feedback when writing new code. Revision ultimately helped reshape how I think about data analysis, and the updated chunks in my portfolio reflect how those changes carried through the rest of the course.
 
@@ -1305,10 +1308,12 @@ A big part of extending my thinking was treating feedback as something to build 
 
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
 
-Here is a peer review from Lab 4:
+Here is a peer review from Lab 5: 
 
-Overall, this lab was really easy to follow and super well put together. Your joins were done cleanly and it was clear you understood why you were doing each step, not just running code to get to the answer. The visuals looked great too, especially the recreated plot and the scatterplot. I also liked your explanation for the model. I would work on tweaking the x-axis labels so they’re not so crowded for #8 graph. I would also adjust the scale to fit better. Overall, great job!
+“Hey, really nice work on this lab! Your notebook is clean, logical, and easy to follow. I really liked your code formatting—it’s clear you’re thinking carefully about each filtering and joining step rather than just stacking code. Your comments were also extremely helpful; they make your reasoning transparent and show that you understand the data flow, not just the output.”
 
+“One small note: I think there’s a typo in your date filter, and your pipeline might be even clearer if you converted the numeric dates into actual Date objects using ymd(). Other than that, great work—your workflow is tidy and intentional.”
+I chose this example because it reflects how I learned to balance encouragement with specific, actionable suggestions.Although it was a small tweak to the code it is a specific suggestion that can help improve workflow. 
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
 
-Through the weekly pair programming sessions I got more comfortable thinking out loud and working through code collaboratively rather than individually. At the beginning of the quarter I mostly focused on my own screen and tried to get it right but over time I learned to pause and check in with my partner before moving forward. I also became more intentional about asking clarifying questions and breaking problems into steps we both understood.
+Through the weekly pair programming sessions I got more comfortable thinking out loud and working through code collaboratively rather than individually. At the beginning of the quarter I mostly focused on my own screen and tried to get it right but over time I learned to pause and check in with my partner before moving forward. I also became more intentional about asking clarifying questions and breaking problems into steps we both understood. Switching from "talker" to "typer" taught me how to speak more eloquantly as a programmer and communicator, and also have faith and trust in my teammates. 

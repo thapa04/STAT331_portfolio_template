@@ -6,12 +6,21 @@ editor: visual
 
 **Answer each of the following questions with *one sentence* including a brief explanation.**
 
-1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
+1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.\
+    If *Jonathan Flores* doesn’t earn an A, then nobody should, because they were always on top of the material, and constantly helped me as a partner in class.
 
 2.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
 
+    The most difficult part of the class for me was definitely writing functions, because they felt conceptually abstract at first, and required me to think about my code in a more general, reusable way than I was used to.
+
 3.  What was the easiest part of the class for you? Explain why.
+
+    The easiest part of the class for me was using `dplyr` pipelines and wrangling data, because once I got the hang of the syntax, it felt natural to chain together filters, summaries, and joins to clean up messy data.
 
 4.  What part of the class surprised or interested you the most? Explain why.
 
+    I was most surprised and interested by how customizable visualization could be, there are so many packages such as ggplot2 and RColorBrewer that give us the chance to customize color, plots, themes and overall scale.
+
 5.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+
+Keep your files and code organized, carefully comment code so that you can refer to it later for the portfolio and to revise thinking.

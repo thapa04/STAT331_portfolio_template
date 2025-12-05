@@ -2202,7 +2202,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p><u><strong>My Grade:</strong></u> I believe my grade equivalent to course work evidenced below to be an __.</p>
+<p><u><strong>My Grade:</strong></u> I believe my grade equivalent to course work evidenced below to be an B+.</p>
 <p><u><strong>Learning Objective Evidence:</strong></u> In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify <strong>where</strong> the code came from (e.g., Lab 4 Question 2).</p>
 <section id="working-with-data" class="level2">
 <h2 class="anchored" data-anchor-id="working-with-data">Working with Data</h2>
@@ -2438,16 +2438,17 @@ vertical-align: -.125em;
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Lab 5 Using left_join() to attach interview transcripts to key witnesses</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>witness_interviews <span class="ot">&lt;-</span> person <span class="sc">|&gt;</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    (address_street_name <span class="sc">==</span> <span class="st">&quot;Northwestern Dr&quot;</span> <span class="sc">&amp;</span> </span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>       address_number <span class="sc">==</span> <span class="fu">max</span>(address_number)) <span class="sc">|</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">str_detect</span>(name, <span class="st">&quot;Annabel&quot;</span>) <span class="sc">&amp;</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>       address_street_name <span class="sc">==</span> <span class="st">&quot;Franklin Ave&quot;</span>)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(interview, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;person_id&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(transcript)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Learning note I originally found each witnesses interview in seperate stage and used slice (1)</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">#After feedback I combined logic into one pipe that filters both witnesses, joins to their interviews and returns a signle dataset.</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>witness_interviews <span class="ot">&lt;-</span> person <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    (address_street_name <span class="sc">==</span> <span class="st">&quot;Northwestern Dr&quot;</span> <span class="sc">&amp;</span> </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>       address_number <span class="sc">==</span> <span class="fu">max</span>(address_number)) <span class="sc">|</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    (<span class="fu">str_detect</span>(name, <span class="st">&quot;Annabel&quot;</span>) <span class="sc">&amp;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>       address_street_name <span class="sc">==</span> <span class="st">&quot;Franklin Ave&quot;</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(interview, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;person_id&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(transcript)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A simple left join to add tax revenue data - <code>inner_join()</code> Example 1</p>
 <div class="cell">
@@ -2490,14 +2491,16 @@ vertical-align: -.125em;
 <li><code>semi_join()</code></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Lab 5 Extracting the murderer&#39;s interview using semi_join()</span></span>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Lab 5 Semi Join to keep only the interview rows whose person_id appears in the murderer table</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>murderer_interview <span class="ot">&lt;-</span> interview <span class="sc">|&gt;</span></span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(</span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(murderer, person_id),</span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">&quot;person_id&quot;</span></span>
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Sem Join to keep only the interview rows whose person_id appears in the murderer table - <code>anti_join()</code></p>
+<ul>
+<li><code>anti_join()</code></li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Lab 5 - Find gold 48Z who didn&#39;t check in</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Revised for anti_join(), anti_join() keeps rows from gold_48Z where there is no matching id in gold_48Z_checked.</span></span>
@@ -2631,7 +2634,7 @@ vertical-align: -.125em;
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Lab 8 Question 3 Well-formatted plotting function using tidy evaluation</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Learning note - My original version was hard coded but after feedback I wrote clean_label with stringr and englue() to turn variable names into something more readable. </span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>clean_label <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span> </span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_replace_all</span>(<span class="st">&quot;_&quot;</span>, <span class="st">&quot; &quot;</span>) <span class="sc">|&gt;</span> </span>
@@ -3364,25 +3367,32 @@ vertical-align: -.125em;
 <ul>
 <li>Example 3</li>
 </ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Lab 2 Problem 17 </span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Anova comparing avg weight across species </span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>species_mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(weight <span class="sc">~</span> species, <span class="at">data =</span> surveys)</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(species_mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="revising-my-thinking" class="level2">
 <h2 class="anchored" data-anchor-id="revising-my-thinking">Revising My Thinking</h2>
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
-<p>Earlier in the course I mostly focused on just making the code run, but over time I realized that how I write the code matters too. For example, in Lab 3 I initially used several repeated <code>mutate()</code> and <code>filter()</code> calls, but after feedback I rewrote it as one clean pipeline. That change helped me see that there are often multiple dplyr solutions to the same task — and choosing the clearer, more efficient one makes the code much easier to understand later.</p>
-<p>Another example, In Lab 4, I revised my original approach to recoding and ordering categorical variables in the childcare plot. Initially, I used <code>case_when</code>to manually relabel age groups and the legend ordering did not always match the lines in the plot. After feedback, I updated the code to use <code>fct_recode()</code> from forcats automatically align the legend with the plotted data. This change made the code both shorter and more reliable.</p>
+<p>Throughout the quarter, revising my work became one of the main ways I improved my coding habits. I revised almost every lab. I still made a consistent effort to understand why each revision was suggested and how to apply it in future assignments.Regretably, however I didn’t leave comments in my code as often as I should have (partially due to being unaware of this). Regardless, over time, I shifted from simply getting code to run to thinking more carefully about clarity, efficiency, and the bigger ideas behind tidy code.</p>
+<p>Even small fixes taught me to look for patterns in my approach and adjust my workflow so the same issues didn’t repeat. By the later labs, I was automatically applying feedback when writing new code. Revision ultimately helped reshape how I think about data analysis, and the updated chunks in my portfolio reflect how those changes carried through the rest of the course.</p>
 </section>
 <section id="extending-my-thinking" class="level2">
 <h2 class="anchored" data-anchor-id="extending-my-thinking">Extending My Thinking</h2>
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
-<p>In Lab 3, I also revised how I calculated summary statistics for instructors. My first solution calculated each numeric summary in separate function calls, which worked but required repeating variable names and made it harder to extend. I later rewrote this using <code>across()</code>, which allowed all summaries to be computed in a single call. This revision not only shortened the code significantly, but also made it easier to maintain</p>
+<p>Extending my thinking this quarter meant going beyond what was required and trying to understand which tools or functions would make my code clearer, more efficient, or more flexible. I tried to think critically about the options we learned in class and choose the approach that best fit each situation. When I was curious or wanted to improve something, I looked things up on my own—like exploring new color palettes or experimenting with functions such as across() or map() to write cleaner pipelines.</p>
+<p>A big part of extending my thinking was treating feedback as something to build on rather than just fix. For example, after learning how across() could replace several repeated summary steps, I started using it more intentionally in later labs to reduce repetition. Similarly, writing functions in Lab 8 helped me see how I could generalize tasks instead of rewriting the same code multiple times. Overall, I put real effort into producing thoughtful, high-quality work in each lab, and the code in my portfolio shows how I tried to push myself a little further each week.</p>
 </section>
 <section id="peer-support-collaboration" class="level2">
 <h2 class="anchored" data-anchor-id="peer-support-collaboration">Peer Support &amp; Collaboration</h2>
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
-<p>Here is a peer review from Lab 4:</p>
-<p>Overall, this lab was really easy to follow and super well put together. Your joins were done cleanly and it was clear you understood why you were doing each step, not just running code to get to the answer. The visuals looked great too, especially the recreated plot and the scatterplot. I also liked your explanation for the model. I would work on tweaking the x-axis labels so they’re not so crowded for #8 graph. I would also adjust the scale to fit better. Overall, great job!</p>
-<!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
-<p>Through the weekly pair programming sessions I got more comfortable thinking out loud and working through code collaboratively rather than individually. At the beginning of the quarter I mostly focused on my own screen and tried to get it right but over time I learned to pause and check in with my partner before moving forward. I also became more intentional about asking clarifying questions and breaking problems into steps we both understood.</p>
+<p>Here is a peer review from Lab 5:</p>
+<p>“Hey, really nice work on this lab! Your notebook is clean, logical, and easy to follow. I really liked your code formatting—it’s clear you’re thinking carefully about each filtering and joining step rather than just stacking code. Your comments were also extremely helpful; they make your reasoning transparent and show that you understand the data flow, not just the output.”</p>
+<p>“One small note: I think there’s a typo in your date filter, and your pipeline might be even clearer if you converted the numeric dates into actual Date objects using ymd(). Other than that, great work—your workflow is tidy and intentional.” I chose this example because it reflects how I learned to balance encouragement with specific, actionable suggestions.Although it was a small tweak to the code it is a specific suggestion that can help improve workflow. <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   --></p>
+<p>Through the weekly pair programming sessions I got more comfortable thinking out loud and working through code collaboratively rather than individually. At the beginning of the quarter I mostly focused on my own screen and tried to get it right but over time I learned to pause and check in with my partner before moving forward. I also became more intentional about asking clarifying questions and breaking problems into steps we both understood. Switching from “talker” to “typer” taught me how to speak more eloquantly as a programmer and communicator, and also have faith and trust in my teammates.</p>
 </section>
 
 </main>
